@@ -85,6 +85,8 @@ def validate_login(username, password):
     param = (username,)
     cursor.execute(sql, param)
     user = cursor.fetchone()
+    if user == None:
+        return False
     if bcrypt.check_password_hash(user[2], password):
         return True
     return False
