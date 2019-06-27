@@ -1,6 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from config import connection
-import json
 from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
@@ -20,32 +19,43 @@ def show_sign_up():
     if request.method == 'GET':
         return render_template('sign-up.html')
     else:
-        username = request.form['username']
-        password = request.form['pwd']
-        fullname = request.form['fullname']
 
-        hashed_pwd = bcrypt.generate_password_hash(password)
+        conn = connection.get_connection()
+        cursor = conn.cursor()
 
-        insert_user(username, hashed_pwd, fullname)
+        try:
+            username = request.form['username']
+            password = request.form['pwd']
+            fullname = request.form['fullname']
 
+            hashed_pwd = bcrypt.generate_password_hash(password)
+
+            insert_user(username, hashed_pwd, fullname, cursor)
+
+            conn.commit()
+
+            response = {
+                'message': 'success'
+            }
+            return jsonify(response), 200
+        except Exception as e:
+            conn.rollback()
+            print('Error',e)
+        finally:
+            cursor.close()
+            conn.close()
         response = {
-            'message': 'success'
+            'message': 'Gagal insert data'
         }
-        return json.dumps(response)
+        return jsonify(response), 500
+        
 
-def insert_user(username, password, fullname):
-
-    conn = connection.get_connection()
-
-    cursor = conn.cursor()
+def insert_user(username, password, fullname, cursor):
 
     sql = 'insert into t_user(id, username, password, name) values(%s, %s, %s, %s)'
     param = (None, username, password, fullname)
     cursor.execute(sql, param)
 
-    conn.commit()
-    cursor.close()
-    conn.close()
 
 @app.route('/login', methods=['POST'])
 def login():

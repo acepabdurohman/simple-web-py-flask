@@ -114,12 +114,13 @@
                 data: $('form').serialize(),
                 type: 'POST',
                 success: function(response) {
-                    r = JSON.parse(response)
-                    alert(r.message)
+                    console.log(response)
+                    alert(response.message)
                     window.location.href = '/'
                 },
                 error: function(response){
-                    console.log(response.message)
+                    console.log(response)
+                    alert(response.message)
                 }
             });
         });
