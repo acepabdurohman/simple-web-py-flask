@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from config import connection
 from flask_bcrypt import Bcrypt
+import logging
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -10,7 +11,8 @@ app.secret_key = 'my_secret'
 def main():
     is_logged_in = session.get('logged_in')
     if is_logged_in:
-        return redirect(url_for('index'))
+        username = session.get('username')
+        return redirect(url_for('index', username = username))
     return render_template('login.html')
 
 @app.route("/sign_up", methods=['GET', 'POST'])
@@ -40,7 +42,7 @@ def show_sign_up():
             return jsonify(response), 200
         except Exception as e:
             conn.rollback()
-            print('Error',e)
+            logging.error(e)
         finally:
             cursor.close()
             conn.close()
@@ -66,16 +68,17 @@ def login():
 
     if result:
         session['logged_in'] = True
-        return redirect(url_for('index'))
+        session['username'] = username
+        return redirect(url_for('index', username = username))
     else:
         return render_template('login.html', message='Username atau password salah')
 
-@app.route('/home')
-def index():
+@app.route('/home/<username>')
+def index(username):
     is_logged_in = session.get('logged_in')
     if not is_logged_in:
         return redirect(url_for('main'))
-    return render_template('index.html')
+    return render_template('index.html', my_username = username)
 
 
 def validate_login(username, password):
@@ -90,6 +93,7 @@ def validate_login(username, password):
     if bcrypt.check_password_hash(user[2], password):
         return True
     return False
+
 
 @app.route('/logout')
 def logout():
