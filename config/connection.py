@@ -1,6 +1,7 @@
 import pymysql
 
-host = "localhost"
+host = "mysql56"
+port = 3306
 username = "root"
 password = "admin1234"
 database = "db_training"
@@ -10,5 +11,6 @@ def get_connection():
         host,
         username,
         password,
-        database
+        database,
+        port
     )
