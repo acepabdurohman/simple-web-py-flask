@@ -1,2 +1,6 @@
 # simple-web-py-flask
-Learning how to make simple website with Python Flask
+execute command pip install -r requirements
+
+execute command python app.py
+
+run in browser http://localhost:7000
